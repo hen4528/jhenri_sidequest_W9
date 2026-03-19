@@ -70,6 +70,8 @@ const MOON_GRAVITY = 1.62;
 // debug & gravity toggle state
 let debugMode = false;
 let moonGravityEnabled = false;
+// collision boxes debug
+let showCollisionBoxes = false;
 
 function preload() {
   // --- IMAGES ---
@@ -166,12 +168,16 @@ function setMoonGravity(enabled) {
 function keyPressed() {
   startMusicIfNeeded();
   // toggle debug overlay
-  if (key === "f" || key === "F") {
+  if (key === "m" || key === "M") {
     debugMode = !debugMode;
   }
   // toggle moon gravity
   if (key === "g" || key === "G") {
     setMoonGravity(!moonGravityEnabled);
+  }
+  // toggle collision boxes
+  if (key === "c" || key === "C") {
+    showCollisionBoxes = !showCollisionBoxes;
   }
 }
 
@@ -182,6 +188,10 @@ function mousePressed() {
     // toggle button region at top-left: x:8-112, y:8-40
     if (mouseX >= 8 && mouseX <= 112 && mouseY >= 8 && mouseY <= 40) {
       setMoonGravity(!moonGravityEnabled);
+    }
+    // collision boxes toggle button: x:8-112, y:58-74
+    if (mouseX >= 8 && mouseX <= 112 && mouseY >= 58 && mouseY <= 74) {
+      showCollisionBoxes = !showCollisionBoxes;
     }
   }
   // persistent debug toggle button (top-right)
@@ -270,13 +280,21 @@ function draw() {
   pop();
   camera.on();
 
+  // nstruction text
+  textSize(10);
+  fill(0, 120);
+  rect(4, 8, 100, 18, 4);
+  fill(255);
+  textAlign(LEFT, CENTER);
+  text("M: DEBUG MENU", 10, 17);
+
   // --- DEBUG OVERLAY ---
   if (debugMode) {
     camera.off();
     push();
     noStroke();
     fill(0, 180);
-    rect(4, 4, 160, 56, 6);
+    rect(4, 4, 160, 88, 6);
     fill(255);
     textSize(10);
     textAlign(LEFT, TOP);
@@ -301,7 +319,63 @@ function draw() {
       by + bh / 2,
     );
 
+    // collision boxes toggle
+    const cbx = 8,
+      cby = 58,
+      cbw = 104,
+      cbh = 16;
+    stroke(255);
+    strokeWeight(1);
+    fill(showCollisionBoxes ? "#88ff88" : "#444");
+    rect(cbx, cby, cbw, cbh, 4);
+    noStroke();
+    fill(0);
+    textAlign(CENTER, CENTER);
+    text(
+      showCollisionBoxes ? "Collisions (ON)" : "Collisions (OFF)",
+      cbx + cbw / 2,
+      cby + cbh / 2,
+    );
+
     pop();
     camera.on();
+    // draw collision boxes in world space when enabled
+    if (showCollisionBoxes) {
+      // ensure we're drawing in world coordinates
+      push();
+      camera.on();
+      noFill();
+      strokeWeight(1);
+
+      // player box (red)
+      stroke(255, 100, 100);
+      rectMode(CENTER);
+      rect(player.pos.x, player.pos.y, player.w, player.h);
+
+      // sensor box (green)
+      if (typeof sensor !== "undefined") {
+        stroke(100, 255, 100);
+        rect(sensor.pos.x, sensor.pos.y, sensor.w, sensor.h);
+      }
+
+      // ground tiles (magenta)
+      stroke(200, 100, 200);
+      if (ground && ground.length) {
+        for (let i = 0; i < ground.length; i++) {
+          const s = ground[i];
+          if (!s) continue;
+          rect(s.pos.x, s.pos.y, s.w || TILE_W, s.h || TILE_H);
+        }
+      }
+      if (groundDeep && groundDeep.length) {
+        for (let i = 0; i < groundDeep.length; i++) {
+          const s = groundDeep[i];
+          if (!s) continue;
+          rect(s.pos.x, s.pos.y, s.w || TILE_W, s.h || TILE_H);
+        }
+      }
+
+      pop();
+    }
   }
 }
