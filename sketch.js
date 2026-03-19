@@ -64,6 +64,12 @@ const MAP_START_Y = VIEWH - TILE_H * 4;
 
 // gravity
 const GRAVITY = 10;
+// moon gravity (approx. 1.62 m/s^2 relative to Earth's ~9.81)
+const MOON_GRAVITY = 1.62;
+
+// debug & gravity toggle state
+let debugMode = false;
+let moonGravityEnabled = false;
 
 function preload() {
   // --- IMAGES ---
@@ -152,12 +158,41 @@ function startMusicIfNeeded() {
   }
 }
 
+function setMoonGravity(enabled) {
+  moonGravityEnabled = !!enabled;
+  world.gravity.y = moonGravityEnabled ? MOON_GRAVITY : GRAVITY;
+}
+
 function keyPressed() {
   startMusicIfNeeded();
+  // toggle debug overlay
+  if (key === "f" || key === "F") {
+    debugMode = !debugMode;
+  }
+  // toggle moon gravity
+  if (key === "g" || key === "G") {
+    setMoonGravity(!moonGravityEnabled);
+  }
 }
 
 function mousePressed() {
   startMusicIfNeeded();
+  // If debug overlay is visible, allow clicking the gravity toggle box
+  if (debugMode) {
+    // toggle button region at top-left: x:8-112, y:8-40
+    if (mouseX >= 8 && mouseX <= 112 && mouseY >= 8 && mouseY <= 40) {
+      setMoonGravity(!moonGravityEnabled);
+    }
+  }
+  // persistent debug toggle button (top-right)
+  if (
+    mouseX >= VIEWW - 44 &&
+    mouseX <= VIEWW - 8 &&
+    mouseY >= 8 &&
+    mouseY <= 26
+  ) {
+    debugMode = !debugMode;
+  }
 }
 
 function touchStarted() {
@@ -221,4 +256,52 @@ function draw() {
 
   // --- KEEP IN VIEW ---
   player.pos.x = constrain(player.pos.x, FRAME_W / 2, VIEWW - FRAME_W / 2);
+
+  // persistent debug button (always visible)
+  camera.off();
+  push();
+  noStroke();
+  fill(0, 120);
+  rect(VIEWW - 44, 8, 36, 18, 4);
+  fill(255);
+  textSize(10);
+  textAlign(CENTER, CENTER);
+  text(debugMode ? "DBG ON" : "DEBUG", VIEWW - 26, 17);
+  pop();
+  camera.on();
+
+  // --- DEBUG OVERLAY ---
+  if (debugMode) {
+    camera.off();
+    push();
+    noStroke();
+    fill(0, 180);
+    rect(4, 4, 160, 56, 6);
+    fill(255);
+    textSize(10);
+    textAlign(LEFT, TOP);
+    text("DEBUG", 12, 8);
+    text(`Gravity: ${world.gravity.y.toFixed(2)}`, 12, 22);
+
+    // draw toggle button
+    const bx = 8,
+      by = 34,
+      bw = 104,
+      bh = 16;
+    stroke(255);
+    strokeWeight(1);
+    fill(moonGravityEnabled ? "#88c0ff" : "#444");
+    rect(bx, by, bw, bh, 4);
+    noStroke();
+    fill(0);
+    textAlign(CENTER, CENTER);
+    text(
+      moonGravityEnabled ? "Moon Gravity (ON)" : "Moon Gravity (OFF)",
+      bx + bw / 2,
+      by + bh / 2,
+    );
+
+    pop();
+    camera.on();
+  }
 }
