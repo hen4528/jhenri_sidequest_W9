@@ -15,7 +15,7 @@ This is a code that allows you to toggle between moon gravity and earth gravity 
 
 ## Assets
 
-N/A
+No assets were personally added by Jasmine Henri
 
 ---
 
