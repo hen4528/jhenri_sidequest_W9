@@ -296,7 +296,7 @@ function draw() {
     fill(0, 180);
     rect(4, 4, 160, 88, 6);
     fill(255);
-    textSize(10);
+    textSize(8);
     textAlign(LEFT, TOP);
     text("DEBUG", 12, 8);
     text(`Gravity: ${world.gravity.y.toFixed(2)}`, 12, 22);
