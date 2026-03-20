@@ -280,7 +280,7 @@ function draw() {
   pop();
   camera.on();
 
-  // nstruction text
+  // Instruction text
   textSize(10);
   fill(0, 120);
   rect(4, 8, 100, 18, 4);
